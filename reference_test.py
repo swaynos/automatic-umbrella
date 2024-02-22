@@ -1,4 +1,4 @@
-from llama_index.llms import Ollama
+from llama_index.legacy.llms import Ollama
 
 llm = Ollama(model="llama2")
 
