@@ -161,3 +161,6 @@ cython_debug/
 
 # User imported data should not be committed
 data/
+
+# Don't commit qdrant_data
+qdrant_data/
