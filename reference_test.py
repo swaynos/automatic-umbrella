@@ -1,15 +1,7 @@
-from pathlib import Path
+from llama_index.core import VectorStoreIndex, ServiceContext, SimpleDirectoryReader, StorageContext
+from llama_index.llms.ollama import Ollama
+from llama_index.vector_stores.qdrant import QdrantVectorStore
 import qdrant_client
-from llama_index.core import (   
-    VectorStoreIndex, 
-    ServiceContext, 
-    SimpleDirectoryReader, 
-    StorageContext
-)
-
-# reference: https://docs.llamaindex.ai/en/stable/examples/llm/ollama.html
-from llama_index.legacy.llms import Ollama
-from llama_index.legacy.vector_stores import QdrantVectorStore
 
 # Loading the documents from the disk
 documents = SimpleDirectoryReader("./data").load_data()
