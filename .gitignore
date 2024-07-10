@@ -159,8 +159,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# User imported data should not be committed
-data/
+my_secrets.py
 
-# Don't commit qdrant_data
-qdrant_data/
+**/.*DS_Store
