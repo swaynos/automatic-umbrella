@@ -17,7 +17,7 @@ def click_when_clickable(driver, by, value, timeout=config.DEFAULT_WAIT_DURATION
     element.click()
     return element
 
-def take_screenshot(driver, error_message):
+def take_screenshot(driver):
     timestamp = time.strftime("%Y%m%d-%H%M%S")
     screenshot_path = os.path.join("screenshots", f"error_{timestamp}.png")
     os.makedirs(os.path.dirname(screenshot_path), exist_ok=True)

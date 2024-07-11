@@ -10,20 +10,19 @@ import time
 
 from utilities import take_screenshot, wait_for_element, click_when_clickable
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename='sbc.log', filemode='w')
-
 def navigate_to_sbc(driver):
     # Wait for the navigation bar to be present
     wait_for_element(driver, By.CSS_SELECTOR, "nav.ut-tab-bar")
     # Click on the "SBC" button in the navigation bar
     click_when_clickable(driver, By.CSS_SELECTOR, "button.ut-tab-bar-item.icon-sbc")
+    logging.info("Navigated to the sbc page.")
 
 def select_upgrades_menu(driver):
     # Wait for the menu to be visible
     wait_for_element(driver, By.CSS_SELECTOR, "div.menu-container")
     # Click on the "Upgrades" button in the menu
     click_when_clickable(driver, By.XPATH, "//button[contains(text(), 'Upgrades')]")
+    logging.info("Clicked on the Upgrades menu.")
 
 def open_daily_upgrade(driver, upgrade_name = "Daily Bronze Upgrade"):
     """
@@ -72,6 +71,7 @@ def use_squad_builder(driver):
     wait_for_element(driver, By.CSS_SELECTOR, "section.SquadPanel.SBCSquadPanel")
     # Click the "Use Squad Builder" button
     click_when_clickable(driver, By.XPATH, "//button[contains(text(), 'Use Squad Builder') and not(contains(@class, 'disabled'))]")
+    logging.info("Clicked on the 'Use Squad Builder' button.")
 
 def set_sorting_and_quality(driver, sort = "Lowest Quick Sell", quality = "Bronze"):
     # Change the sorting to "Lowest Quick Sell"
@@ -80,12 +80,14 @@ def set_sorting_and_quality(driver, sort = "Lowest Quick Sell", quality = "Bronz
     # Change the quality to quality
     quality_dropdown = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='{quality}'])]")
     quality_option = click_when_clickable(driver, By.XPATH, f"//li[contains(text(), '{quality}')]")
+    logging.info(f"Set sorting to '{sort}' and quality to '{quality}'.")
     return quality_dropdown, quality_option
 
 def build_squad(driver):
     # Scroll down until the "Build" button is visible and click it
     build_button = wait_for_element(driver, By.XPATH, "//button[contains(text(), 'Build')]")
     build_button.click()
+    logging.info("Clicked on the 'Build' button.")
 
 def select_challenge(driver, challenge_name):
     """
@@ -103,12 +105,12 @@ def select_challenge(driver, challenge_name):
 
     # Check if the challenge is already completed
     if "complete" in challenge_row.get_attribute("class"):
-        print(f"'{challenge_name}' is already complete.")
+        logging.warning(f"'{challenge_name}' is already complete.")
         return False
 
     # Click the challenge row
     challenge_row.click()
-    print(f"'{challenge_name}' selected successfully")
+    logging.info(f"'{challenge_name}' selected successfully")
     return True
 
 def start_challenge(driver):
@@ -119,6 +121,7 @@ def start_challenge(driver):
         )
     )
     start_button.click()
+    logging.info("Clicked on the 'Start Challenge' or 'Go to Challenge' button.")
 
 def check_sbc_requirements(driver):
     # TODO: Is this try/catch block necessary?
@@ -136,16 +139,19 @@ def check_sbc_requirements(driver):
 
         print("All SBC requirements are complete.")
     except Exception as e:
-        take_screenshot(driver, f"SBC requirements check failed: {str(e)}")
+        take_screenshot(driver)
+        logging.error(f"SBC requirements check failed: {str(e)}")
         raise  # Re-raise the exception to be handled by the caller
 
 def submit_squad(driver):
     # Wait for the "Submit" button to be clickable
     click_when_clickable(driver, By.XPATH, "//button[contains(@class, 'ut-squad-tab-button-control') and contains(@class, 'call-to-action') and contains(., 'Submit')]")
+    logging.info("Clicked on the 'Submit' button.")
 
 def claim_rewards(driver):
     # Wait for the "Claim Rewards" button to be clickable
     claim_button = click_when_clickable(driver, By.XPATH, "//button[contains(@class, 'btn-standard') and contains(@class, 'call-to-action') and contains(text(), 'Claim Rewards')]")
+    logging.info(f"Clicked on the 'Claim Rewards' button.")
 
 def daily_simple_upgrade(driver, challenge_name, sort_type, quality):
     navigate_to_sbc(driver)
@@ -158,6 +164,7 @@ def daily_simple_upgrade(driver, challenge_name, sort_type, quality):
             set_sorting_and_quality(driver, sort_type, quality)
             time.sleep(.5)
             build_squad(driver)
+            time.sleep(.5)
             check_sbc_requirements(driver)
             submit_squad(driver)
             claim_rewards(driver)
@@ -176,8 +183,9 @@ def daily_gold_upgrade(driver, sort_type):
                 use_squad_builder(driver)
                 time.sleep(1)  # Allow dropdown options to become visible
                 set_sorting_and_quality(driver, sort_type, "Bronze")
+                time.sleep(.5)
                 build_squad(driver)
-                time.sleep(1) # Allow requirements to update
+                time.sleep(2) # Allow requirements to update
                 check_sbc_requirements(driver)
                 submit_squad(driver)
                 claim_rewards(driver)
@@ -187,8 +195,9 @@ def daily_gold_upgrade(driver, sort_type):
                 use_squad_builder(driver)
                 time.sleep(1)  # Allow dropdown options to become visible
                 set_sorting_and_quality(driver, sort_type, "Silver")
+                time.sleep(.5)
                 build_squad(driver)
-                time.sleep(1) # Allow requirements to update
+                time.sleep(2) # Allow requirements to update
                 check_sbc_requirements(driver)
                 submit_squad(driver)
                 claim_rewards(driver)

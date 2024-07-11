@@ -8,9 +8,6 @@ import selenium.common.exceptions as selenium_exceptions
 import config
 from utilities import take_screenshot, wait_for_element, click_when_clickable
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename='store.log', filemode='w')
-
 def navigate_to_store(driver):
     # Wait for the navigation bar to be present
     wait_for_element(driver, By.CSS_SELECTOR, "nav.ut-tab-bar")
@@ -125,6 +122,7 @@ def resolve_duplicates(driver):
     if verify_duplicates_screen(driver):
         click_ellipsis_button_on_duplicates_screen(driver)
         select_swap_in_all_tradeable_button(driver)
+        time.sleep(.5) # Wait for action to process
         confirm_swap_items(driver)
         time.sleep(1) # Wait for action to process
         click_ellipsis_button_on_duplicates_screen(driver)
