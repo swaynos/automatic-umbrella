@@ -1,29 +1,17 @@
+import logging
+
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import selenium.common.exceptions as selenium_exceptions
 import config
-import os
 import time
 
-def take_screenshot(driver, error_message):
-    timestamp = time.strftime("%Y%m%d-%H%M%S")
-    screenshot_path = os.path.join("screenshots", f"error_{timestamp}.png")
-    os.makedirs(os.path.dirname(screenshot_path), exist_ok=True)
-    driver.save_screenshot(screenshot_path)
-    print(f"An error occurred: {error_message}. Screenshot saved to {screenshot_path}")
+from utilities import take_screenshot, wait_for_element, click_when_clickable
 
-def wait_for_element(driver, by, value, timeout=config.DEFAULT_WAIT_DURATION):
-    return WebDriverWait(driver, timeout).until(
-        EC.presence_of_element_located((by, value))
-    )
-
-def click_when_clickable(driver, by, value, timeout=config.DEFAULT_WAIT_DURATION):
-    element = WebDriverWait(driver, timeout).until(
-        EC.element_to_be_clickable((by, value))
-    )
-    element.click()
-    return element
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename='sbc.log', filemode='w')
 
 def navigate_to_sbc(driver):
     # Wait for the navigation bar to be present
@@ -133,6 +121,7 @@ def start_challenge(driver):
     start_button.click()
 
 def check_sbc_requirements(driver):
+    # TODO: Is this try/catch block necessary?
     try:
         # Wait for the requirements checklist to be present
         requirements_list = wait_for_element(driver, By.CSS_SELECTOR, "ul.sbc-requirements-checklist")
@@ -151,22 +140,12 @@ def check_sbc_requirements(driver):
         raise  # Re-raise the exception to be handled by the caller
 
 def submit_squad(driver):
-    try:
-        # Wait for the "Submit" button to be clickable
-        submit_button = click_when_clickable(driver, By.XPATH, "//button[contains(@class, 'ut-squad-tab-button-control') and contains(@class, 'call-to-action') and contains(., 'Submit')]")
-        print("'Submit' button clicked successfully")
-    except Exception as e:
-        take_screenshot(driver, f"Submit squad failed: {str(e)}")
-        raise
+    # Wait for the "Submit" button to be clickable
+    click_when_clickable(driver, By.XPATH, "//button[contains(@class, 'ut-squad-tab-button-control') and contains(@class, 'call-to-action') and contains(., 'Submit')]")
 
 def claim_rewards(driver):
-    try:
-        # Wait for the "Claim Rewards" button to be clickable
-        claim_button = click_when_clickable(driver, By.XPATH, "//button[contains(@class, 'btn-standard') and contains(@class, 'call-to-action') and contains(text(), 'Claim Rewards')]")
-        print("'Claim Rewards' button clicked successfully")
-    except Exception as e:
-        take_screenshot(driver, f"Claim rewards failed: {str(e)}")
-        raise
+    # Wait for the "Claim Rewards" button to be clickable
+    claim_button = click_when_clickable(driver, By.XPATH, "//button[contains(@class, 'btn-standard') and contains(@class, 'call-to-action') and contains(text(), 'Claim Rewards')]")
 
 def daily_simple_upgrade(driver, challenge_name, sort_type, quality):
     navigate_to_sbc(driver)
@@ -217,7 +196,7 @@ def daily_gold_upgrade(driver, sort_type):
             claim_rewards(driver) # The 3rd claim rewards button is for the Gold upgrade
             i += 1
 
-def daily_challenges(driver):
+def daily_challenges(driver: webdriver):
     try:
         sort_type = "Lowest Quick Sell"
         daily_simple_upgrade(driver, "Daily Bronze Upgrade", sort_type, "Bronze")
@@ -225,8 +204,10 @@ def daily_challenges(driver):
         daily_gold_upgrade(driver, sort_type)
     except selenium_exceptions.TimeoutException as e:
         take_screenshot(driver, "Timeout Exception occurred")
+        logging.error(f"Timeout Exception occurred: {str(e)}")
     except Exception as e:
         error_message = str(e)
         take_screenshot(driver, error_message)
+        logging.error(f"An error occurred: {error_message}")
     # TODO: Consider retrying on exception
     

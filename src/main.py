@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 import config
 from login import login
 from sbc import daily_challenges
+from store import open_packs
 
 def main():
     # Set up the WebDriver
@@ -16,6 +17,10 @@ def main():
         # Call the login function
         login(driver)
 
+        # Open packs
+        open_packs(driver)
+
+        # Solve daily challenges
         daily_challenges(driver)
 
     finally:
