@@ -161,4 +161,9 @@ cython_debug/
 
 my_secrets.py
 
+cookies.json
+
+# Screenshots being captured for development purposes
+screenshots/
+
 **/.*DS_Store

@@ -7,6 +7,13 @@
         "request": "launch",
         "program": "${file}",
         "console": "integratedTerminal"
+      },
+      {
+        "name": "Python: Debug main.py",
+        "type": "debugpy",
+        "request": "launch",
+        "program": "${workspaceFolder}/src/main.py",
+        "console": "integratedTerminal"
       }
     ]
   }
