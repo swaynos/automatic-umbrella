@@ -124,7 +124,7 @@ def resolve_duplicates(driver):
         select_swap_in_all_tradeable_button(driver)
         time.sleep(.5) # Wait for action to process
         confirm_swap_items(driver)
-        time.sleep(1) # Wait for action to process
+        time.sleep(1.5) # Wait for action to process
         click_ellipsis_button_on_duplicates_screen(driver)
         quick_sell_duplicates(driver)
         confirm_quick_sell(driver)
@@ -164,6 +164,6 @@ def open_packs(driver):
         logging.error(f"Timeout Exception occurred: {e}")
     except Exception as e:
         error_message = str(e)
-        take_screenshot(driver, error_message)
+        take_screenshot(driver)
         logging.error(error_message)
     # TODO: Consider retrying on exception

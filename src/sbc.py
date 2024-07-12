@@ -164,7 +164,7 @@ def daily_simple_upgrade(driver, challenge_name, sort_type, quality):
             set_sorting_and_quality(driver, sort_type, quality)
             time.sleep(.5)
             build_squad(driver)
-            time.sleep(.5)
+            time.sleep(1)
             check_sbc_requirements(driver)
             submit_squad(driver)
             claim_rewards(driver)
