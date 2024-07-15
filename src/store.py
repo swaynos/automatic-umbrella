@@ -126,6 +126,7 @@ def resolve_duplicates(driver):
         confirm_swap_items(driver)
         time.sleep(1.5) # Wait for action to process
         click_ellipsis_button_on_duplicates_screen(driver)
+        time.sleep(.5)
         quick_sell_duplicates(driver)
         confirm_quick_sell(driver)
 
@@ -133,6 +134,8 @@ def quick_sell_duplicates(driver):
     # Wait for the "Quick Sell tradeable items for..." button to be present
     quick_sell_button = wait_for_element(driver, By.XPATH, "//div[@class='ut-bulk-action-popup-view']//button[.//span[contains(text(), 'Quick Sell')]]")
     quick_sell_button.click()
+    # TODO: Sometimes there are two quick sell entries. One to quick sell for a coin profit,
+    # plus another entry to quick sell for 0 coins
     logging.info("Clicked 'Quick Sell' item.")
 
 def confirm_swap_items(driver):
@@ -160,7 +163,7 @@ def open_packs(driver):
                 click_on_packs(driver)
 
     except selenium_exceptions.TimeoutException as e:
-        take_screenshot(driver, "Timeout Exception occurred")
+        take_screenshot(driver)
         logging.error(f"Timeout Exception occurred: {e}")
     except Exception as e:
         error_message = str(e)

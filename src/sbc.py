@@ -212,11 +212,11 @@ def daily_challenges(driver: webdriver):
         daily_simple_upgrade(driver, "Daily Silver Upgrade", sort_type, "Silver")
         daily_gold_upgrade(driver, sort_type)
     except selenium_exceptions.TimeoutException as e:
-        take_screenshot(driver, "Timeout Exception occurred")
+        take_screenshot(driver)
         logging.error(f"Timeout Exception occurred: {str(e)}")
     except Exception as e:
         error_message = str(e)
-        take_screenshot(driver, error_message)
+        take_screenshot(driver)
         logging.error(f"An error occurred: {error_message}")
     # TODO: Consider retrying on exception
     
