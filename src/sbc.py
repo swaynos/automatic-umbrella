@@ -153,10 +153,10 @@ def claim_rewards(driver):
     claim_button = click_when_clickable(driver, By.XPATH, "//button[contains(@class, 'btn-standard') and contains(@class, 'call-to-action') and contains(text(), 'Claim Rewards')]")
     logging.info(f"Clicked on the 'Claim Rewards' button.")
 
-def daily_simple_upgrade(driver, challenge_name, sort_type, quality):
+def daily_simple_upgrade(driver, challenge_name, sort_type, quality, size = 3):
     navigate_to_sbc(driver)
     select_upgrades_menu(driver)
-    for i in range(3):
+    for i in range(size):
         sbc_completable = open_daily_upgrade(driver, challenge_name)
         if sbc_completable:
             use_squad_builder(driver)
@@ -210,6 +210,7 @@ def daily_challenges(driver: webdriver):
         sort_type = "Lowest Quick Sell"
         daily_simple_upgrade(driver, "Daily Bronze Upgrade", sort_type, "Bronze")
         daily_simple_upgrade(driver, "Daily Silver Upgrade", sort_type, "Silver")
+        daily_simple_upgrade(driver, "FUTTIES Daily Login Upgrade", sort_type, "Bronze", 1)
         daily_gold_upgrade(driver, sort_type)
     except selenium_exceptions.TimeoutException as e:
         take_screenshot(driver)
