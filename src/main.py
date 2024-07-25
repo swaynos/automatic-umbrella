@@ -1,4 +1,5 @@
 import logging
+import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -10,6 +11,10 @@ import config
 from login import login
 from sbc import daily_challenges
 from store import open_packs
+
+# Generate timestamp for log filename
+timestamp = time.strftime("%Y%m%d-%H%M%S")
+log_filename = f'main_{timestamp}.log'
 
 def check_and_click_continue(driver):
     """Check if the live message is present and click the continue button if it is."""
@@ -36,7 +41,7 @@ def check_and_click_continue(driver):
 
 def main():
     # Configure logging
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename='main.log', filemode='w')
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', filename=log_filename, filemode='w')
 
     # Set up the WebDriver
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))

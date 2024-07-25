@@ -77,9 +77,18 @@ def set_sorting_and_quality(driver, sort = "Lowest Quick Sell", quality = "Bronz
     # Change the sorting to "Lowest Quick Sell"
     click_when_clickable(driver, By.CSS_SELECTOR, "div.inline-list-select.ut-drop-down-control")
     click_when_clickable(driver, By.XPATH, f"//li[contains(text(), '{sort}')]")
-    # Change the quality to quality
+
+    # Locate the quality dropdown
+    quality_dropdown = driver.find_element(By.XPATH, f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='{quality}'])]")
+    
+    # Scroll down to the quality dropdown to ensure it is in view, if necessary
+    driver.execute_script("arguments[0].scrollIntoView(true);", quality_dropdown)
+    
+    # Click the quality dropdown
     quality_dropdown = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='{quality}'])]")
-    quality_option = click_when_clickable(driver, By.XPATH, f"//li[contains(text(), '{quality}')]")
+
+    # Click the quality option
+    quality_option = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control') and .//span[text()='Quality']]//ul/li[contains(text(), '{quality}')]")
     logging.info(f"Set sorting to '{sort}' and quality to '{quality}'.")
     return quality_dropdown, quality_option
 
@@ -153,18 +162,147 @@ def claim_rewards(driver):
     claim_button = click_when_clickable(driver, By.XPATH, "//button[contains(@class, 'btn-standard') and contains(@class, 'call-to-action') and contains(text(), 'Claim Rewards')]")
     logging.info(f"Clicked on the 'Claim Rewards' button.")
 
-def daily_simple_upgrade(driver, challenge_name, sort_type, quality, size = 3):
+def select_position(driver, position):
+    """
+    Selects a squad position based on the label, if the position is not locked.
+    
+    Args:
+        driver: The Selenium WebDriver instance.
+        position (str): The position label to select (e.g., "GK").
+        
+    Returns:
+        bool: True if the position was successfully selected, else False.
+    """
+    # TODO: Is this try/catch block necessary? 
+    try:
+        # Wait for the panel to be visible
+        wait_for_element(driver, By.CSS_SELECTOR, ".ut-squad-pitch-view.sbc")
+
+        # Wait for the squad slots to be visible
+        slots = driver.find_elements(By.CSS_SELECTOR, "div.ut-squad-slot-view:not(.locked)")
+
+        for slot in slots:
+            # Check for the position label within the slot
+            label_element = slot.find_element(By.CSS_SELECTOR, "span.label")
+            if label_element.text == position:
+                slot.click()  # Click the slot to select the position
+                logging.info(f"Selected position: {position}")
+                return True  # Position selected successfully
+        
+        logging.warning(f"Position '{position}' not found or is locked.")
+        return False  # Position not found or all are locked
+
+    except selenium_exceptions.NoSuchElementException as e:
+        logging.error(f"Could not find the position '{position}': {str(e)}")
+        return False  # If any error occurs, return False
+
+def click_add_player_button(driver):
+    """
+    Clicks the 'Add Player' button if it is visible and enabled.
+    
+    Args:
+        driver: The Selenium WebDriver instance.
+        
+    Returns:
+        bool: True if the button was successfully clicked, else False.
+    """
+    # Wait for the button to be visible and clickable
+    add_player_button = driver.find_element(By.XPATH, "//button[span[@class='btn-text' and text()='Add Player']]")
+
+    if add_player_button.is_displayed() and add_player_button.is_enabled():
+        add_player_button.click()  # Click the button
+        logging.info("Clicked 'Add Player' button successfully.")
+        return True  # Button clicked successfully
+    else:
+        logging.warning("Add Player button is not displayed or enabled.")
+        return False  # Button is not clickable
+
+def close_active_filter_by_position(driver, position):
+    """
+    Clicks the (close) button within the active element if it is visible and enabled.
+    
+    Args:
+        driver: The Selenium WebDriver instance.
+        position (str): The position label to look for (e.g., "GK").
+        
+    Returns:
+        bool: True if the button was successfully clicked, else False.
+    """
+    # Locate the active element that contains the desired position
+    active_elements = driver.find_elements(By.CSS_SELECTOR, "div.has-selection")
+    
+    for active_element in active_elements:
+        # Find the span with the position text
+        position_label = active_element.find_element(By.CSS_SELECTOR, "span.label")
+        if position_label.text.strip() == position:
+            # Locate the button within the matching active element
+            button = active_element.find_element(By.CSS_SELECTOR, "button.flat.ut-search-filter-control--row-button")
+            
+            if button.is_displayed() and button.is_enabled():
+                button.click()  # Click the button
+                logging.info(f"Clicked the button for position '{position}' successfully.")
+                return True  # Button clicked successfully
+
+    logging.warning(f"No active element found with position '{position}' or button is not clickable.")
+    return False  # No matching active element or button is not enabled/clickable
+
+def click_search_button(driver):
+    # Wait until the "Search" button is clickable and perform the click
+    search_button = click_when_clickable(driver, By.XPATH, "//button[contains(@class, 'btn-standard') and contains(@class, 'call-to-action') and text()='Search']")
+    logging.info("Clicked on the 'Search' button successfully.")
+    return search_button  # Return the clicked button if needed
+
+def click_first_add_player(driver):
+    # Construct the XPath to find the first "add" button
+    add_button_xpath = "//li//button[contains(@class, 'add')]"
+    
+    # Use the existing click_when_clickable utility function
+    add_button = click_when_clickable(driver, By.XPATH, add_button_xpath)
+    
+    logging.info("Clicked the first available 'Add' button.")
+    return add_button  # Return the button or perform further actions as needed
+
+
+def daily_simple_upgrade(driver, challenge_name, sort_type, quality, position="GK", size = 3):
+    """
+    Completes a daily simple upgrade challenge that requires only one position of specified quality.
+
+    Args:
+        driver: The Selenium WebDriver instance used to interact with the web application.
+        challenge_name (str): The name of the simple upgrade challenge to complete.
+        sort_type (str): The sorting type to be applied when using the squad builder (e.g., "Lowest Quick Sell").
+        quality (str): The quality level of the position required for the challenge (e.g., "Bronze").
+        size (int): The number of times the upgrade challenge will be attempted. Defaults to 3.
+
+    This function performs the following steps:
+    1. Navigates to the Squad Building Challenges (SBC) section.
+    2. Selects the upgrades menu.
+    3. For the specified number of attempts (size):
+        - Opens the daily upgrade associated with challenge_name.
+        - If the upgrade is completable, proceeds to use the squad builder.
+        - Sets the sorting and quality for the squad builder based on the provided parameters.
+        - Builds the squad and checks for SBC requirements.
+        - Submits the squad and claims rewards. This process is repeated twice for the claimRewards step.
+
+    Note:
+        Each successful completion of the challenge awards rewards, which are claimed after each submission.
+    """
     navigate_to_sbc(driver)
     select_upgrades_menu(driver)
     for i in range(size):
         sbc_completable = open_daily_upgrade(driver, challenge_name)
         if sbc_completable:
-            use_squad_builder(driver)
-            time.sleep(1)  # Allow dropdown options to become visible
-            set_sorting_and_quality(driver, sort_type, quality)
+            time.sleep(.5) # Allow the SBC an opportunity to load
+            select_position(driver, position)
             time.sleep(.5)
-            build_squad(driver)
+            click_add_player_button(driver)
+            time.sleep(.5)  # Allow dropdown options to become visible
+            set_sorting_and_quality(driver, sort_type, quality)
+            close_active_filter_by_position(driver, position)
+            click_search_button(driver)
             time.sleep(1)
+            click_first_add_player(driver)
+            time.sleep(.5)
             check_sbc_requirements(driver)
             submit_squad(driver)
             claim_rewards(driver)
@@ -210,7 +348,7 @@ def daily_challenges(driver: webdriver):
         sort_type = "Lowest Quick Sell"
         daily_simple_upgrade(driver, "Daily Bronze Upgrade", sort_type, "Bronze")
         daily_simple_upgrade(driver, "Daily Silver Upgrade", sort_type, "Silver")
-        daily_simple_upgrade(driver, "FUTTIES Daily Login Upgrade", sort_type, "Bronze", 1)
+        daily_simple_upgrade(driver, "FUTTIES Daily Login Upgrade", sort_type, "Bronze", "GK", 1)
         daily_gold_upgrade(driver, sort_type)
     except selenium_exceptions.TimeoutException as e:
         take_screenshot(driver)
