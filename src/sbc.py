@@ -292,21 +292,20 @@ def daily_simple_upgrade(driver, challenge_name, sort_type, quality, position="G
     for i in range(size):
         sbc_completable = open_daily_upgrade(driver, challenge_name)
         if sbc_completable:
-            time.sleep(.5) # Allow the SBC an opportunity to load
-            select_position(driver, position)
-            time.sleep(.5)
-            click_add_player_button(driver)
-            time.sleep(.5)  # Allow dropdown options to become visible
-            set_sorting_and_quality(driver, sort_type, quality)
-            close_active_filter_by_position(driver, position)
-            click_search_button(driver)
             time.sleep(1)
-            click_first_add_player(driver)
-            time.sleep(.5)
-            check_sbc_requirements(driver)
-            submit_squad(driver)
-            claim_rewards(driver)
-            claim_rewards(driver) # happens twice
+            if (select_position(driver, position)):
+                click_add_player_button(driver)
+                time.sleep(.5)  # Allow dropdown options to become visible
+                set_sorting_and_quality(driver, sort_type, quality)
+                close_active_filter_by_position(driver, position)
+                click_search_button(driver)
+                time.sleep(1)
+                click_first_add_player(driver)
+                time.sleep(.5)
+                check_sbc_requirements(driver)
+                submit_squad(driver)
+                claim_rewards(driver)
+                claim_rewards(driver) # happens twice
             i += 1
 
 def daily_gold_upgrade(driver, sort_type):
