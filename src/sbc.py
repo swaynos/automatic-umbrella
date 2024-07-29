@@ -51,16 +51,19 @@ def open_daily_upgrade(driver, upgrade_name = "Daily Bronze Upgrade"):
 
             # Check if the parent div has the "complete" class
             if "complete" in parent_div.get_attribute("class"):
-                print(f"{upgrade_name} is already complete.")
+                logging.info(f"{upgrade_name} is already complete.")
                 return 0  # Indicate that the task is complete with 0 repeatable count
 
             # Click the upgrade header
             upgrade_header.click()
+            logging.info(f"Clicked the {upgrade_name} upgrade.")
 
             # Extract the repeatable count
             repeatable_element = parent_div.find_element(By.CSS_SELECTOR, "div.ut-squad-building-set-status-label-view.repeat span.text")
             repeatable_text = repeatable_element.text
             repeatable_count = int(repeatable_text.split(" ")[1])
+            logging.info(f"Repeatable count for {upgrade_name}: {repeatable_count}")
+
             return repeatable_count  # Return the repeatable count
         except selenium_exceptions.NoSuchElementException:
             driver.execute_script("window.scrollBy(0, 100);")
@@ -77,19 +80,26 @@ def set_sorting_and_quality(driver, sort = "Lowest Quick Sell", quality = "Bronz
     # Change the sorting to "Lowest Quick Sell"
     click_when_clickable(driver, By.CSS_SELECTOR, "div.inline-list-select.ut-drop-down-control")
     click_when_clickable(driver, By.XPATH, f"//li[contains(text(), '{sort}')]")
+    logging.info(f"Set sorting to '{sort}'.")
 
     # Locate the quality dropdown
     quality_dropdown = driver.find_element(By.XPATH, f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='{quality}'])]")
     
     # Scroll down to the quality dropdown to ensure it is in view, if necessary
     driver.execute_script("arguments[0].scrollIntoView(true);", quality_dropdown)
+    logging.info(f"Scrolled until the quality filter is in view.")
     
     # Click the quality dropdown
     quality_dropdown = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='{quality}'])]")
+    logging.info(f"Clicked on the quality filter.")
 
     # Click the quality option
+    # TODO: There is something wrong with this selector that doesn't find the element all the time. Seemed to work with
+    # Bronze, but failed on Silver today?
     quality_option = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control') and .//span[text()='Quality']]//ul/li[contains(text(), '{quality}')]")
-    logging.info(f"Set sorting to '{sort}' and quality to '{quality}'.")
+    logging.info(f"Clicked on the quality option '{quality}'.")
+
+    logging.info(f"Completed sorting to '{sort}' and quality to '{quality}'.")
     return quality_dropdown, quality_option
 
 def build_squad(driver):
@@ -173,7 +183,7 @@ def select_position(driver, position):
     Returns:
         bool: True if the position was successfully selected, else False.
     """
-    # TODO: Is this try/catch block necessary? 
+    # TODO: Does this try/catch block add value, or should I rely on the parent error handling?
     try:
         # Wait for the panel to be visible
         wait_for_element(driver, By.CSS_SELECTOR, ".ut-squad-pitch-view.sbc")
@@ -292,8 +302,10 @@ def daily_simple_upgrade(driver, challenge_name, sort_type, quality, position="G
     for i in range(size):
         sbc_completable = open_daily_upgrade(driver, challenge_name)
         if sbc_completable:
-            time.sleep(1)
+            time.sleep(2)  # Allow the SBC an opportunity to load
+            # TODO: What to wait for above instead of sleep?
             if (select_position(driver, position)):
+                time.sleep(2) # TODO: What to wait for instead?
                 click_add_player_button(driver)
                 time.sleep(.5)  # Allow dropdown options to become visible
                 set_sorting_and_quality(driver, sort_type, quality)
