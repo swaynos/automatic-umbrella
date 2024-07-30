@@ -161,11 +161,10 @@ def open_packs(driver):
                     break
                 navigate_to_store(driver)
                 click_on_packs(driver)
-    """
-    Consider the following exception:
-    ERROR - Message: element click intercepted: Element <div class="tile ut-tile-view--with-gfx col-1-2 packs-tile storehub-tile highlight" style="">...</div> is not clickable at point (426, 276). Other element would receive the click: <div class="ut-click-shield showing">...</div>
-        Proposal: If this element is visible, then wait before proceeding.
-    """
+    #Consider the following exception:
+    #ERROR - Message: element click intercepted: Element <div class="tile ut-tile-view--with-gfx col-1-2 packs-tile storehub-tile highlight" style="">...</div> is not clickable at point (426, 276). Other element would receive the click: <div class="ut-click-shield showing">...</div>
+    #    Proposal: If this element is visible, then wait before proceeding.
+    
     except selenium_exceptions.TimeoutException as e:
         take_screenshot(driver)
         logging.error(f"Timeout Exception occurred: {e}")

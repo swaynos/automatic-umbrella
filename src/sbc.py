@@ -96,6 +96,8 @@ def set_sorting_and_quality(driver, sort = "Lowest Quick Sell", quality = "Bronz
     # Click the quality option
     # TODO: There is something wrong with this selector that doesn't find the element all the time. Seemed to work with
     # Bronze, but failed on Silver today?
+    # The bug is because Bronze runs first, so it is pre-selected. I need to check if the quality is already selected
+    # and if so, clear the filter before continuing.
     quality_option = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control') and .//span[text()='Quality']]//ul/li[contains(text(), '{quality}')]")
     logging.info(f"Clicked on the quality option '{quality}'.")
 
@@ -355,18 +357,31 @@ def daily_gold_upgrade(driver, sort_type):
             i += 1
 
 def daily_challenges(driver: webdriver):
-    try:
-        sort_type = "Lowest Quick Sell"
-        daily_simple_upgrade(driver, "Daily Bronze Upgrade", sort_type, "Bronze")
-        daily_simple_upgrade(driver, "Daily Silver Upgrade", sort_type, "Silver")
-        daily_simple_upgrade(driver, "FUTTIES Daily Login Upgrade", sort_type, "Bronze", "GK", 1)
-        daily_gold_upgrade(driver, sort_type)
-    except selenium_exceptions.TimeoutException as e:
-        take_screenshot(driver)
-        logging.error(f"Timeout Exception occurred: {str(e)}")
-    except Exception as e:
-        error_message = str(e)
-        take_screenshot(driver)
-        logging.error(f"An error occurred: {error_message}")
-    # TODO: Consider retrying on exception
+    retry_attempts = 0
+    max_retry_attempts = 3
+
+    while retry_attempts < max_retry_attempts:
+        try:
+            sort_type = "Lowest Quick Sell"
+            daily_simple_upgrade(driver, "FUTTIES Daily Login Upgrade", sort_type, "Bronze", "GK", 1)
+            daily_simple_upgrade(driver, "Daily Bronze Upgrade", sort_type, "Bronze")
+            daily_simple_upgrade(driver, "Daily Silver Upgrade", sort_type, "Silver")
+            daily_gold_upgrade(driver, sort_type)
+            # If successful, break out of the loop
+            break
+        except selenium_exceptions.TimeoutException as e:
+            take_screenshot(driver)
+            logging.error(f"Timeout Exception occurred: {str(e)}")
+        except Exception as e:
+            take_screenshot(driver)
+            logging.error(f"An error occurred: {str(e)}")
+
+        # Increment the retry attempt count and wait before retrying
+        retry_attempts += 1
+        logging.info(f"Retrying... Attempt {retry_attempts}/{max_retry_attempts}")
+
+        # Optional: Add a delay before the next retry (e.g., time.sleep(2))
+    
+    if retry_attempts == max_retry_attempts:
+        logging.error("Maximum retry attempts reached. Terminating daily challenges.")
     
