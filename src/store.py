@@ -99,7 +99,7 @@ def check_for_unassigned_items_popup(driver):
 def verify_duplicates_screen(driver):
     try:
         # Check if the "Duplicates" header is present within the specified structure
-        driver.find_element(By.XPATH, "//section[@class='sectioned-item-list']//header[@class='ut-section-header-view']//h2[@class='title' and text()='Duplicates']")
+        driver.find_element(By.XPATH, "//header[@class='ut-section-header-view']//h2[@class='title' and text()='Untradeable Duplicates']")
         logging.info("Duplicates screen is being shown.")
         return True
     except selenium_exceptions.NoSuchElementException:
