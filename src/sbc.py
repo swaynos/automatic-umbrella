@@ -93,13 +93,23 @@ def set_sorting_and_quality(driver, sort = "Lowest Quick Sell", quality = "Bronz
     quality_dropdown = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='{quality}'])]")
     logging.info(f"Clicked on the quality filter.")
 
-    # Click the quality option
-    # TODO: There is something wrong with this selector that doesn't find the element all the time. Seemed to work with
-    # Bronze, but failed on Silver today?
-    # The bug is because Bronze runs first, so it is pre-selected. I need to check if the quality is already selected
-    # and if so, clear the filter before continuing.
-    quality_option = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control') and .//span[text()='Quality']]//ul/li[contains(text(), '{quality}')]")
-    logging.info(f"Clicked on the quality option '{quality}'.")
+    # Get the sibling elements
+    siblings = quality_dropdown.get_attribute("innerHTML")
+   
+    # Check if any `ul` siblings exist
+    if siblings:
+        # Click the quality option
+        quality_option = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control') and .//ul/li[contains(text(), '{quality}')]]")
+        logging.info(f"Clicked on the quality option '{quality}'.")
+    else:
+        # TODO: I'm not sure if this is ever hit
+        # Click the quality dropdown        
+        click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='{quality}'])]")
+        logging.info(f"Clicked on the quality filter.")
+
+        # Click the quality option
+        quality_option = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control') and .//span[text()='Quality']//ul/li[contains(text(), '{quality}')]")
+        logging.info(f"Clicked on the quality option '{quality}'.")
 
     logging.info(f"Completed sorting to '{sort}' and quality to '{quality}'.")
     return quality_dropdown, quality_option
@@ -304,10 +314,22 @@ def daily_simple_upgrade(driver, challenge_name, sort_type, quality, position="G
     for i in range(size):
         sbc_completable = open_daily_upgrade(driver, challenge_name)
         if sbc_completable:
-            time.sleep(2)  # Allow the SBC an opportunity to load
+            time.sleep(1)  # Allow the SBC an opportunity to load
+                      
+            # Check if the "Submit" button is present
+            try:
+                submit_button = driver.find_element(By.XPATH, "//button[contains(@class, 'ut-squad-tab-button-control') and contains(., 'Submit')]")
+                if submit_button.is_displayed() and submit_button.is_enabled():
+                    submit_button.click()  # Click the Submit button
+                    logging.info(f"Clicked 'Submit' button without going through squad building steps.")
+                    claim_rewards(driver)
+                    continue  # Skip to the next iteration
+            except selenium_exceptions.NoSuchElementException:
+                logging.info("Submit button not found, proceeding with squad building.")
+
             # TODO: What to wait for above instead of sleep?
             if (select_position(driver, position)):
-                time.sleep(2) # TODO: What to wait for instead?
+                time.sleep(1) # TODO: What to wait for instead?
                 click_add_player_button(driver)
                 time.sleep(.5)  # Allow dropdown options to become visible
                 set_sorting_and_quality(driver, sort_type, quality)
@@ -363,7 +385,7 @@ def daily_challenges(driver: webdriver):
     while retry_attempts < max_retry_attempts:
         try:
             sort_type = "Lowest Quick Sell"
-            daily_simple_upgrade(driver, "FUTTIES Daily Login Upgrade", sort_type, "Bronze", "GK", 1)
+            #daily_simple_upgrade(driver, "FUTTIES Daily Login Upgrade", sort_type, "Bronze", "GK", 1)
             daily_simple_upgrade(driver, "Daily Bronze Upgrade", sort_type, "Bronze")
             daily_simple_upgrade(driver, "Daily Silver Upgrade", sort_type, "Silver")
             daily_gold_upgrade(driver, sort_type)
