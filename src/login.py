@@ -1,4 +1,5 @@
 import json
+import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -17,10 +18,12 @@ def save_cookies(driver, cookies_file):
     with open(cookies_file, 'w') as file:
         json.dump(driver.get_cookies(), file)
 
-def load_cookies(driver, cookies_file):
+def load_cookies(driver, cookies_file, target_domain):
     with open(cookies_file, 'r') as file:
         cookies = json.load(file)
         for cookie in cookies:
+            # Set the cookie's domain to the target domain (if necessary)
+            cookie['domain'] = target_domain
             driver.add_cookie(cookie)
 
 def is_logged_in(driver):
@@ -36,13 +39,17 @@ def login(driver):
 
     # Load cookies if they exist
     try:
-        load_cookies(driver, COOKIES_FILE)
+        load_cookies(driver, COOKIES_FILE, ".ea.com")
         driver.refresh()
         if is_logged_in(driver):
             print("Logged in using cookies.")
             return
     except FileNotFoundError:
         pass
+    except Exception as e:
+        # Handle the exception if necessary
+        print(f"An error occurred: {e}")
+        raise e  
 
     # Wait for the login button to be clickable
     login_button = WebDriverWait(driver, config.LONGER_WAIT_DURATION).until(
@@ -58,16 +65,30 @@ def login(driver):
     )
 
     # Enter email
-    email_input.send_keys(secrets.EMAIL)  # Replace with your email
+    email_input.send_keys(secrets.EMAIL)
 
-    # Enter password
-    password_input = driver.find_element(By.ID, "password")
-    password_input.send_keys(secrets.PASSWORD)  # Replace with your password
+    # Check for the presence of the "NEXT" button and click it if present
+    try:
+        next_button = WebDriverWait(driver, config.DEFAULT_WAIT_DURATION).until(
+            EC.element_to_be_clickable((By.ID, "logInBtn"))
+        )
+        next_button.click()  # Clicks the NEXT button
+        # Wait for the password input to be visible
+        password_input = WebDriverWait(driver, config.DEFAULT_WAIT_DURATION).until(
+            EC.visibility_of_element_located((By.ID, "password"))
+        )
+
+        # Enter password
+        password_input.send_keys(secrets.PASSWORD)  # Replace with your password
+    except Exception as e:
+        print(f"NEXT button not found or could not be clicked: {e}")
 
     # Wait for the sign-in button to be clickable and click it
     sign_in_button = WebDriverWait(driver, config.DEFAULT_WAIT_DURATION).until(
         EC.element_to_be_clickable((By.ID, "logInBtn"))
     )
+    
+    # Click the sign-in button
     sign_in_button.click()
 
     # Wait for the 2FA form to be present if cookies are not used
