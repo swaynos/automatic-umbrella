@@ -54,15 +54,29 @@ def open_daily_upgrade(driver, upgrade_name = "Daily Bronze Upgrade"):
                 logging.info(f"{upgrade_name} is already complete.")
                 return 0  # Indicate that the task is complete with 0 repeatable count
 
-            # Click the upgrade header
-            upgrade_header.click()
-            logging.info(f"Clicked the {upgrade_name} upgrade.")
-
             # Extract the repeatable count
             repeatable_element = parent_div.find_element(By.CSS_SELECTOR, "div.ut-squad-building-set-status-label-view.repeat span.text")
             repeatable_text = repeatable_element.text
             repeatable_count = int(repeatable_text.split(" ")[1])
             logging.info(f"Repeatable count for {upgrade_name}: {repeatable_count}")
+
+            if repeatable_count == 0:  
+                return 0
+
+            # Click the upgrade header
+            upgrade_header.click()
+            logging.info(f"Clicked the {upgrade_name} upgrade.")
+
+            # Check if the "Submit" button is enabled
+            # TODO: Is this needed?
+            # try:
+            #     submit_button = driver.find_element(By.XPATH, "//button[contains(@class, 'ut-squad-tab-button-control') and contains(., 'Submit')]")
+            #     if submit_button.get_attribute("disabled") is None:
+            #         logging.warning(f"The 'Submit' button is not disabled for {upgrade_name}. Was it completed before?")
+            #         return 1
+                
+            # except selenium_exceptions.NoSuchElementException:
+            #     logging.error("Submit button not found after clicking the upgrade.")
 
             return repeatable_count  # Return the repeatable count
         except selenium_exceptions.NoSuchElementException:
@@ -98,8 +112,7 @@ def set_sorting_and_quality(driver, sort = "Lowest Quick Sell", quality = "Bronz
    
     # Check if any `ul` siblings exist
     if siblings:
-        # Click the quality option
-        quality_option = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control') and .//ul/li[contains(text(), '{quality}')]]")
+        quality_option = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'inline-list-select')]//ul[@class='inline-list']/li[contains(text(), '{quality}')]")
         logging.info(f"Clicked on the quality option '{quality}'.")
     else:
         # TODO: I'm not sure if this is ever hit
