@@ -354,7 +354,6 @@ def daily_simple_upgrade(driver, challenge_name, sort_type, quality, position="G
                 check_sbc_requirements(driver)
                 submit_squad(driver)
                 claim_rewards(driver)
-                claim_rewards(driver) # happens twice
             i += 1
 
 def daily_gold_upgrade(driver, sort_type):
