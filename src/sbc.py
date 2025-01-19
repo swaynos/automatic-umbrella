@@ -1,6 +1,7 @@
 import logging
 
 from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -220,6 +221,9 @@ def select_position(driver, position):
             # Check for the position label within the slot
             label_element = slot.find_element(By.CSS_SELECTOR, "span.label")
             if label_element.text == position:
+                # Create ActionChains to hover then click
+                actions = ActionChains(driver)
+                actions.move_to_element(slot).perform()  # Hover over the slot
                 slot.click()  # Click the slot to select the position
                 logging.info(f"Selected position: {position}")
                 return True  # Position selected successfully
@@ -298,6 +302,20 @@ def click_first_add_player(driver):
     return add_button  # Return the button or perform further actions as needed
 
 
+def toggle_ignore_position(driver):
+    # Construct the XPath to find the "Ignore Position" toggle
+    ignore_position_xpath = "//span[contains(text(), 'Ignore Position')]/../div[contains(@class, 'ut-toggle-control')]/div[contains(@class, 'ut-toggle-control--track')]"
+
+    toggle = driver.find_element(By.XPATH, ignore_position_xpath)
+
+    if toggle.is_displayed() and toggle.is_enabled():
+        toggle.click()  # Click the button
+        logging.info("Clicked 'Ignore Position' toggle successfully.")
+        return True  # clicked successfully
+    else:
+        logging.warning("Ignore Position toggle is not displayed or enabled.")
+        return False  # is not clickable
+
 def daily_simple_upgrade(driver, challenge_name, sort_type, quality, position="GK", size = 3):
     """
     Completes a daily simple upgrade challenge that requires only one position of specified quality.
@@ -367,6 +385,7 @@ def daily_gold_upgrade(driver, sort_type):
                 start_challenge(driver)
                 use_squad_builder(driver)
                 time.sleep(1)  # Allow dropdown options to become visible
+                toggle_ignore_position(driver)
                 set_sorting_and_quality(driver, sort_type, "Bronze")
                 time.sleep(.5)
                 build_squad(driver)
@@ -379,6 +398,7 @@ def daily_gold_upgrade(driver, sort_type):
                 start_challenge(driver)
                 use_squad_builder(driver)
                 time.sleep(1)  # Allow dropdown options to become visible
+                toggle_ignore_position(driver)
                 set_sorting_and_quality(driver, sort_type, "Silver")
                 time.sleep(.5)
                 build_squad(driver)
@@ -397,7 +417,7 @@ def daily_challenges(driver: webdriver):
     while retry_attempts < max_retry_attempts:
         try:
             sort_type = "Lowest Quick Sell"
-            #daily_simple_upgrade(driver, "FUTTIES Daily Login Upgrade", sort_type, "Bronze", "GK", 1)
+            daily_simple_upgrade(driver, "Daily Login", sort_type, "Bronze")
             daily_simple_upgrade(driver, "Daily Bronze Upgrade", sort_type, "Bronze")
             daily_simple_upgrade(driver, "Daily Silver Upgrade", sort_type, "Silver")
             daily_gold_upgrade(driver, sort_type)
