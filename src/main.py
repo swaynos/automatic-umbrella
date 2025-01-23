@@ -10,7 +10,7 @@ from selenium.webdriver.common.by import By
 import config
 from login import login
 from sbc import daily_challenges
-from store import open_packs
+from store import open_gold_packs, open_cheap_packs
 
 # Generate timestamp for log filename
 timestamp = time.strftime("%Y%m%d-%H%M%S")
@@ -50,11 +50,14 @@ def main():
         # Call the login function
         login(driver)
 
+        # TODO: How to wait for loading to be done?
+
         # Check for the presence of the live message and click the continue button if it exists
         check_and_click_continue(driver)
 
         # Open packs
-        open_packs(driver)
+        open_gold_packs(driver)
+        open_cheap_packs(driver)
 
         # Solve daily challenges
         daily_challenges(driver)

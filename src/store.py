@@ -55,7 +55,7 @@ def find_pack_element(driver, pack_name, max_scroll_attempts=50):
         print(f"Could not find pack: {pack_name}. Error: {str(e)}")
         return None
 
-def claim_pack(driver, pack_element):
+def claim_pack(driver, pack_element, valuable=True):
     claim_button = pack_element.find_element(By.XPATH, "./ancestor::div[contains(@class, 'ut-store-pack-details-view')]//span[contains(@class, 'subtext') and text()='Claim your Pack']")
     claim_button.click()
     logging.info("Clicked 'Claim your Pack' button.")
@@ -65,7 +65,7 @@ def claim_pack(driver, pack_element):
     click_ellipsis_button(driver)
     click_store_all_in_club(driver)
     time.sleep(2)  # Wait for the action to process
-    resolve_duplicates(driver)
+    resolve_duplicates(driver, valuable)
     print("claim pack completed")
 
 def scroll_to_top(driver):
@@ -74,11 +74,11 @@ def scroll_to_top(driver):
     time.sleep(1)  # Allow time for the page to scroll to the top
     logging.info("Scrolled to the top of the page.")
 
-def open_packs_by_name(driver, pack_name):
+def open_packs_by_name(driver, pack_name, valuable=True):
     while True:
         pack_element = find_pack_element(driver, pack_name)
         if pack_element:
-            claim_pack(driver, pack_element)
+            claim_pack(driver, pack_element, valuable)
             return True
         else:
             return False
@@ -118,7 +118,7 @@ def select_swap_in_all_tradeable_button(driver):
     swap_button.click()
     logging.info("Selected 'Swap in all Tradeable Duplicate items' button.")
 
-def resolve_duplicates(driver):
+def resolve_duplicates(driver, valuable=True):
     if verify_duplicates_screen(driver):
         click_ellipsis_button_on_duplicates_screen(driver)
         select_swap_in_all_tradeable_button(driver)
@@ -127,8 +127,11 @@ def resolve_duplicates(driver):
         time.sleep(1.5) # Wait for action to process
         click_ellipsis_button_on_duplicates_screen(driver)
         time.sleep(.5)
-        quick_sell_duplicates(driver)
-        confirm_quick_sell(driver)
+        if not valuable:
+            quick_sell_duplicates(driver)
+            confirm_quick_sell(driver)
+        else:
+            send_duplicates_transfer_list(driver)
 
 def quick_sell_duplicates(driver):
     # Wait for the "Quick Sell tradeable items for..." button to be present
@@ -138,9 +141,12 @@ def quick_sell_duplicates(driver):
     # plus another entry to quick sell for 0 coins
     logging.info("Clicked 'Quick Sell' item.")
 
+def send_duplicates_transfer_list(driver):
+    raise NotImplementedError
+
 def confirm_swap_items(driver):
     # Wait for the "Yes" button on the "Swap Items" confirmation popup to be present
-    yes_button = wait_for_element(driver, By.XPATH, "//div[@class='ut-action-confirmation-popup-view']//button[.//span[text()='Yes']]")
+    yes_button = wait_for_element(driver, By.XPATH, "//div[@class='ut-action-confirmation-popup-view']//button[.//button[text()='Yes']]")
     yes_button.click()
     logging.info("Confirmed swap items.")
 
@@ -150,14 +156,35 @@ def confirm_quick_sell(driver):
     ok_button.click()
     logging.info("Confirmed quick sell.")
 
-def open_packs(driver):
+def open_gold_packs(driver):
+    try:
+        navigate_to_store(driver)
+        click_on_packs(driver)
+        for pack_name in config.GOLD_PACK_NAMES:
+            while True:
+                scroll_to_top(driver)
+                if not open_packs_by_name(driver, pack_name, True):
+                    break
+                navigate_to_store(driver)
+                click_on_packs(driver)
+    # TODO: Exception handling is the same for both open_packs methods. Consider refactoring.
+    except selenium_exceptions.TimeoutException as e:
+        take_screenshot(driver)
+        logging.error(f"Timeout Exception occurred: {e}")
+    except Exception as e:
+        error_message = str(e)
+        take_screenshot(driver)
+        logging.error(error_message)
+    # TODO: Consider retrying on exception
+
+def open_cheap_packs(driver):
     try:
         navigate_to_store(driver)
         click_on_packs(driver)
         for pack_name in config.PACK_NAMES:
             while True:
                 scroll_to_top(driver)
-                if not open_packs_by_name(driver, pack_name):
+                if not open_packs_by_name(driver, pack_name, False):
                     break
                 navigate_to_store(driver)
                 click_on_packs(driver)
