@@ -125,13 +125,14 @@ def resolve_duplicates(driver, valuable=True):
         time.sleep(.5) # Wait for action to process
         confirm_swap_items(driver)
         time.sleep(1.5) # Wait for action to process
-        click_ellipsis_button_on_duplicates_screen(driver)
-        time.sleep(.5)
-        if not valuable:
-            quick_sell_duplicates(driver)
-            confirm_quick_sell(driver)
-        else:
-            send_duplicates_transfer_list(driver)
+        if verify_duplicates_screen(driver):
+            click_ellipsis_button_on_duplicates_screen(driver)
+            time.sleep(.5)
+            if not valuable:
+                quick_sell_duplicates(driver)
+                confirm_quick_sell(driver)
+            else:
+                send_duplicates_transfer_list(driver)
 
 def quick_sell_duplicates(driver):
     # Wait for the "Quick Sell tradeable items for..." button to be present
@@ -146,7 +147,7 @@ def send_duplicates_transfer_list(driver):
 
 def confirm_swap_items(driver):
     # Wait for the "Yes" button on the "Swap Items" confirmation popup to be present
-    yes_button = wait_for_element(driver, By.XPATH, "//div[@class='ut-action-confirmation-popup-view']//button[.//button[text()='Yes']]")
+    yes_button = wait_for_element(driver, By.XPATH, "//div[@class='ut-action-confirmation-popup-view']//button[text()='Yes']")
     yes_button.click()
     logging.info("Confirmed swap items.")
 
