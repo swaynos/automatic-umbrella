@@ -122,7 +122,7 @@ def resolve_duplicates(driver, valuable=True):
     if verify_duplicates_screen(driver):
         click_ellipsis_button_on_duplicates_screen(driver)
         select_swap_in_all_tradeable_button(driver)
-        time.sleep(.5) # Wait for action to process
+        time.sleep(1) # Wait for action to process
         confirm_swap_items(driver)
         time.sleep(2) # Wait for action to process
         if verify_duplicates_screen(driver):
