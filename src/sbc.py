@@ -118,7 +118,6 @@ def set_sorting_and_quality(driver, sort = "Lowest Quick Sell", quality = "Bronz
     logging.info(f"Set sorting to '{sort}'.")
 
     # Locate the quality dropdown
-    # Bug from 2025-02-01: The quality dropdown is sometimes set to the quality from an earlier challenge
     quality_selector = f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='Bronze'] or .//span[text()='Silver'] or .//span[text()='Gold'])]"
     quality_dropdown = driver.find_element(By.XPATH, quality_selector)
     
