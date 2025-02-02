@@ -124,12 +124,13 @@ def resolve_duplicates(driver, valuable=True):
         select_swap_in_all_tradeable_button(driver)
         time.sleep(.5) # Wait for action to process
         confirm_swap_items(driver)
-        time.sleep(1.5) # Wait for action to process
+        time.sleep(2) # Wait for action to process
         if verify_duplicates_screen(driver):
             click_ellipsis_button_on_duplicates_screen(driver)
             time.sleep(.5)
             if not valuable:
                 quick_sell_duplicates(driver)
+                time.sleep(.5)
                 confirm_quick_sell(driver)
             else:
                 send_duplicates_transfer_list(driver)

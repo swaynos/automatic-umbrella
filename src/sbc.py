@@ -98,14 +98,16 @@ def set_sorting_and_quality(driver, sort = "Lowest Quick Sell", quality = "Bronz
     logging.info(f"Set sorting to '{sort}'.")
 
     # Locate the quality dropdown
-    quality_dropdown = driver.find_element(By.XPATH, f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='{quality}'])]")
+    # Bug from 2025-02-01: The quality dropdown is sometimes set to the quality from an earlier challenge
+    quality_selector = f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='Bronze'] or .//span[text()='Silver'] or .//span[text()='Gold'])]"
+    quality_dropdown = driver.find_element(By.XPATH, quality_selector)
     
     # Scroll down to the quality dropdown to ensure it is in view, if necessary
     driver.execute_script("arguments[0].scrollIntoView(true);", quality_dropdown)
     logging.info(f"Scrolled until the quality filter is in view.")
     
     # Click the quality dropdown
-    quality_dropdown = click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='{quality}'])]")
+    click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='{quality}'])]")
     logging.info(f"Clicked on the quality filter.")
 
     # Get the sibling elements
@@ -417,9 +419,10 @@ def daily_challenges(driver: webdriver):
     while retry_attempts < max_retry_attempts:
         try:
             sort_type = "Lowest Quick Sell"
-            daily_simple_upgrade(driver, "Daily Login", sort_type, "Bronze")
-            daily_simple_upgrade(driver, "Daily Bronze Upgrade", sort_type, "Bronze")
-            daily_simple_upgrade(driver, "Daily Silver Upgrade", sort_type, "Silver")
+            for simple_upgrade_name in config.DAILY_SIMPLE_BRONZE_SBC_NAMES:
+                daily_simple_upgrade(driver, simple_upgrade_name, sort_type, "Bronze")
+            for simple_upgrade_name in config.DAILY_SIMPLE_SILVER_SBC_NAMES:
+                daily_simple_upgrade(driver, simple_upgrade_name, sort_type, "Silver")
             daily_gold_upgrade(driver, sort_type)
             # If successful, break out of the loop
             break
