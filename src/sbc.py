@@ -107,7 +107,13 @@ def set_rarity(driver, rarity = "Common"):
 
 def set_sorting_and_quality(driver, sort = "Lowest Quick Sell", quality = "Bronze"):
     # Change the sorting to "Lowest Quick Sell"
-    click_when_clickable(driver, By.CSS_SELECTOR, "div.inline-list-select.ut-drop-down-control")
+    # Make sure the selector is in view
+    sort_by_selector = "div.inline-list-select.ut-drop-down-control"
+    sort_by = driver.find_element(By.CSS_SELECTOR, sort_by_selector)
+    driver.execute_script("arguments[0].scrollIntoView(true);", sort_by)
+    # Click the selector
+    sort_by.click()
+    # Select the sort type
     click_when_clickable(driver, By.XPATH, f"//li[contains(text(), '{sort}')]")
     logging.info(f"Set sorting to '{sort}'.")
 
