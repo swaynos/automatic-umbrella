@@ -126,7 +126,7 @@ def set_sorting_and_quality(driver, sort = "Lowest Quick Sell", quality = "Bronz
     logging.info(f"Scrolled until the quality filter is in view.")
     
     # Click the quality dropdown
-    click_when_clickable(driver, By.XPATH, f"//div[contains(@class, 'ut-search-filter-control--row') and (.//span[text()='Quality'] or .//span[text()='{quality}'])]")
+    quality_dropdown.click()
     logging.info(f"Clicked on the quality filter.")
 
     # Get the sibling elements
