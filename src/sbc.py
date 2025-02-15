@@ -467,7 +467,7 @@ def daily_gold_upgrade(driver, sort_type):
                 use_squad_builder(driver)
                 time.sleep(1)  # Allow dropdown options to become visible
                 toggle_ignore_position(driver)
-                time.sleep(.1) # There was a bug with the dropdown capturing the next click
+                time.sleep(.5) # Let the toggle complete the animation
                 set_sorting_and_quality(driver, sort_type, "Bronze")
                 time.sleep(.5)
                 build_squad(driver)
@@ -481,6 +481,7 @@ def daily_gold_upgrade(driver, sort_type):
                 use_squad_builder(driver)
                 time.sleep(1)  # Allow dropdown options to become visible
                 toggle_ignore_position(driver)
+                time.sleep(.5) # Let the toggle complete the animation
                 set_sorting_and_quality(driver, sort_type, "Silver")
                 time.sleep(.5)
                 build_squad(driver)
