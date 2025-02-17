@@ -6,7 +6,6 @@ from selenium.webdriver.support import expected_conditions as EC
 import threading
 
 import config
-import my_secrets as secrets
 
 COOKIES_FILE = "cookies.json"
 
@@ -65,7 +64,7 @@ def login(driver):
     )
 
     # Enter email
-    email_input.send_keys(secrets.EMAIL)
+    email_input.send_keys(config.EMAIL)
 
     # Check for the presence of the "NEXT" button and click it if present
     try:
@@ -79,7 +78,7 @@ def login(driver):
         )
 
         # Enter password
-        password_input.send_keys(secrets.PASSWORD)  # Replace with your password
+        password_input.send_keys(config.PASSWORD)  # Replace with your password
     except Exception as e:
         print(f"NEXT button not found or could not be clicked: {e}")
 
