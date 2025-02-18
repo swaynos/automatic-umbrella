@@ -551,6 +551,7 @@ def toty_crafting_upgrade(driver, use_sbc_storage = False):
             sbc_completable = open_daily_upgrade(driver, "TOTY Crafting Upgrade")
             if sbc_completable > 0 and not use_sbc_storage:
                 for i in range(sbc_completable):
+                    sbc_completable = open_daily_upgrade(driver, "TOTY Crafting Upgrade")
                     time.sleep(1)
                     # Find the first open slot
                     for index in range(0, 11):
@@ -627,6 +628,44 @@ def toty_crafting_upgrade(driver, use_sbc_storage = False):
                     # TODO: This can be high risk, check the ratings of the cards added before clicking submit
                     submit_squad(driver)
                     claim_rewards(driver)
+        except selenium_exceptions.TimeoutException as e:
+            take_screenshot(driver)
+            logging.error(f"Timeout Exception occurred: {str(e)}")
+        except Exception as e:
+            take_screenshot(driver)
+            logging.error(f"An error occurred: {str(e)}")
+
+        # Increment the retry attempt count and wait before retrying
+        retry_attempts += 1
+        logging.info(f"Retrying... Attempt {retry_attempts}/{max_retry_attempts}")
+    
+    if retry_attempts == max_retry_attempts:
+        logging.error("Maximum retry attempts reached. Terminating daily challenges.")
+
+def grassroot_grind(driver):
+    retry_attempts = 0
+    max_retry_attempts = 3
+
+    while retry_attempts < max_retry_attempts:
+        try:
+            sort_type = "Lowest Quick Sell"
+            navigate_to_sbc(driver)
+            select_upgrades_menu(driver)
+            sbc_completable = open_daily_upgrade(driver, "Grassroot Grind")
+            for i in range(sbc_completable):
+                sbc_completable = open_daily_upgrade(driver, "Grassroot Grind")
+                time.sleep(1) # Allow the SBC an opportunity to load
+                use_squad_builder(driver)
+                time.sleep(1)  # Allow dropdown options to become visible
+                toggle_ignore_position(driver)
+                time.sleep(.5) # Let the toggle complete the animation
+                set_sorting_and_quality(driver, sort_type, "Bronze")
+                time.sleep(.5)
+                build_squad(driver)
+                time.sleep(2) # Allow requirements to update
+                check_sbc_requirements(driver)
+                submit_squad(driver)
+                claim_rewards(driver)
         except selenium_exceptions.TimeoutException as e:
             take_screenshot(driver)
             logging.error(f"Timeout Exception occurred: {str(e)}")
