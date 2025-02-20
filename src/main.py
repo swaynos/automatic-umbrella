@@ -9,7 +9,7 @@ from selenium.webdriver.common.by import By
 
 import config
 from login import login
-from sbc import daily_challenges, grassroot_grind, toty_crafting_upgrade, eightyone_plus_player_pick
+from sbc import daily_challenges, grassroot_grind, toty_crafting_upgrade, eightyone_plus_player_pick, gold_upgrade
 from store import open_gold_packs, open_cheap_packs
 
 # Generate timestamp for log filename
@@ -64,6 +64,7 @@ def main():
 
         # Special SBC's
         grassroot_grind(driver)
+        gold_upgrade(driver)
         toty_crafting_upgrade(driver, use_sbc_storage = True)
         eightyone_plus_player_pick(driver, use_sbc_storage = True)
         

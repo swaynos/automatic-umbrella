@@ -58,7 +58,10 @@ def open_daily_upgrade(driver, upgrade_name = "Daily Bronze Upgrade"):
             # Extract the repeatable count
             repeatable_element = parent_div.find_element(By.CSS_SELECTOR, "div.ut-squad-building-set-status-label-view.repeat span.text")
             repeatable_text = repeatable_element.text
-            repeatable_count = int(repeatable_text.split(" ")[1])
+            try:
+                repeatable_count = int(repeatable_text.split(" ")[1])
+            except:
+                repeatable_count = -1
             logging.info(f"Repeatable count for {upgrade_name}: {repeatable_count}")
 
             if repeatable_count == 0:  
@@ -757,6 +760,7 @@ def eightyone_plus_player_pick(driver, use_sbc_storage = True):
                             time.sleep(.5)  # Allow dropdown options to become visible
                             set_sbc_storage(driver)
                             set_sorting_and_quality(driver, sort_type, quality)
+                            set_rarity(driver, "Rare")
                             close_active_filter_by_position(driver, selected_position)
                             click_search_button(driver)
                             time.sleep(1)
@@ -772,6 +776,66 @@ def eightyone_plus_player_pick(driver, use_sbc_storage = True):
                     # TODO: This can be high risk, check the ratings of the cards added before clicking submit
                     submit_squad(driver)
                     claim_rewards(driver)
+        except selenium_exceptions.TimeoutException as e:
+            take_screenshot(driver)
+            logging.error(f"Timeout Exception occurred: {str(e)}")
+        except Exception as e:
+            take_screenshot(driver)
+            logging.error(f"An error occurred: {str(e)}")
+
+        # Increment the retry attempt count and wait before retrying
+        retry_attempts += 1
+        logging.info(f"Retrying... Attempt {retry_attempts}/{max_retry_attempts}")
+    
+    if retry_attempts == max_retry_attempts:
+        logging.error("Maximum retry attempts reached. Terminating 81+ challenge.")
+
+def gold_upgrade(driver, repeats = 1,use_sbc_storage = True):
+    challenge_name = "Gold Upgrade"
+    logging.info(f"Starting {challenge_name} challenge.")
+    retry_attempts = 0
+    max_retry_attempts = 3
+
+    while retry_attempts < max_retry_attempts:
+        try:
+            quality = "Gold"
+            sort_type = "Lowest Quick Sell"
+            navigate_to_sbc(driver)
+            select_upgrades_menu(driver)
+            for i in range(repeats):
+                open_daily_upgrade(driver, challenge_name)
+                time.sleep(1)
+                for index in range(0, 11):
+                    # Hide the popover if it's visible
+                    if sbc_requirements_popover_visible(driver):
+                        click_when_clickable(driver, By.CSS_SELECTOR, "div.ut-squad-summary-info")
+
+                    # If the slot is occupied, skip this interation and move onto the next index
+                    if is_slot_filled(driver, index):
+                        continue
+
+                    selected_position = select_position(driver, index=index)
+                    if selected_position:
+                        logging.info(f"Player selected at position: {selected_position}")
+                        time.sleep(1) # TODO: What to wait for instead?
+                        click_add_player_button(driver)
+                        time.sleep(.5)  # Allow dropdown options to become visible
+                        if use_sbc_storage:
+                            set_sbc_storage(driver)
+                        set_sorting_and_quality(driver, sort_type, quality)
+                        set_rarity(driver, "Common")
+                        close_active_filter_by_position(driver, selected_position)
+                        click_search_button(driver)
+                        time.sleep(1)
+                        click_first_add_player(driver)
+                        time.sleep(.5)
+                    else:
+                        logging.error("Failed to add player.")
+                check_sbc_requirements(driver)
+
+                # TODO: This can be high risk, check the ratings of the cards added before clicking submit
+                submit_squad(driver)
+                claim_rewards(driver)
         except selenium_exceptions.TimeoutException as e:
             take_screenshot(driver)
             logging.error(f"Timeout Exception occurred: {str(e)}")
