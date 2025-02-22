@@ -19,6 +19,7 @@ GOLD_PACK_NAMES = os.getenv("GOLD_PACK_NAMES", "x11 Gold Players Pack").split(',
 OPEN_GOLD_PACKS = os.getenv("OPEN_GOLD_PACKS", "false").lower() in ("true", "1", "t")
 OPEN_CHEAP_PACKS = os.getenv("OPEN_CHEAP_PACKS", "false").lower() in ("true", "1", "t")
 SOLVE_DAILY_CHALLENGES = os.getenv("SOLVE_DAILY_CHALLENGES", "true").lower() in ("true", "1", "t")
+GOLD_UPGRADE = os.getenv("GOLD_UPGRADE", "false").lower() in ("true", "1", "t")
 GRASSROOT_GRIND = os.getenv("GRASSROOT_GRIND", "false").lower() in ("true", "1", "t")
 TOTY_CRAFTING_UPGRADE = os.getenv("TOTY_CRAFTING_UPGRADE", "false").lower() in ("true", "1", "t")
 EIGHTYONE_PLUS_PLAYER_PICK = os.getenv("EIGHTYONE_PLUS_PLAYER_PICK", "false").lower() in ("true", "1", "t")
