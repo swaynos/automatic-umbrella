@@ -9,8 +9,8 @@ from selenium.webdriver.common.by import By
 
 import config
 from login import login
-from sbc import daily_challenges, grassroot_grind, toty_crafting_upgrade, eightyone_plus_player_pick, gold_upgrade
-from store import open_gold_packs, open_cheap_packs
+from sbc import *
+from store import *
 
 # Generate timestamp for log filename
 timestamp = time.strftime("%Y%m%d-%H%M%S")
