@@ -11,6 +11,10 @@ import time
 
 from utilities import *
 
+# Notes:
+# 1. Try not to sleep in the helpers, instead allow the caller to decide. These helpers should ideally wait for the elements to be present.
+# 2. Avoid catching errors unless you need to, and instead allow them to raise to the caller for handling.
+
 def navigate_to_sbc(driver):
     # Wait for the navigation bar to be present
     wait_for_element(driver, By.CSS_SELECTOR, "nav.ut-tab-bar")
@@ -246,6 +250,19 @@ def submit_squad(driver):
     # Wait for the "Submit" button to be clickable
     click_when_clickable(driver, By.XPATH, "//button[contains(@class, 'ut-squad-tab-button-control') and contains(@class, 'call-to-action') and contains(., 'Submit')]")
     logging.info("Clicked on the 'Submit' button.")
+
+# In some situations, submitting the squad may be possible before the code has built anything.
+def presubmit_squad_if_available(driver):
+    # Check if the "Submit" button is present
+    try:
+        submit_button = driver.find_element(By.XPATH, "//button[contains(@class, 'ut-squad-tab-button-control') and contains(., 'Submit')]")
+        if submit_button.is_displayed() and submit_button.is_enabled():
+            submit_button.click()  # Click the Submit button
+            claim_rewards(driver)
+            return True
+    except selenium_exceptions.NoSuchElementException:
+        logging.error("Submit button not found, proceeding with squad building.")
+    return False
 
 def claim_rewards(driver):
     # Wait for the "Claim Rewards" button to be clickable

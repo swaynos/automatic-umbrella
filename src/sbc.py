@@ -42,19 +42,12 @@ def daily_simple_upgrade(driver, challenge_name, sort_type, quality, position="G
         sbc_completable = open_daily_upgrade(driver, challenge_name)
         if sbc_completable:
             time.sleep(1)  # Allow the SBC an opportunity to load
-                      
-            # Check if the "Submit" button is present
-            try:
-                submit_button = driver.find_element(By.XPATH, "//button[contains(@class, 'ut-squad-tab-button-control') and contains(., 'Submit')]")
-                if submit_button.is_displayed() and submit_button.is_enabled():
-                    submit_button.click()  # Click the Submit button
-                    logging.info(f"Clicked 'Submit' button without going through squad building steps.")
-                    claim_rewards(driver)
-                    continue  # Skip to the next iteration
-            except selenium_exceptions.NoSuchElementException:
-                logging.info("Submit button not found, proceeding with squad building.")
+            # TODO: This sleep duration seems long. What to wait for instead?
+            
+            if presubmit_squad_if_available(driver):
+                logging.info(f"'Submit' button clicked without going through squad building steps.")
+                continue
 
-            # TODO: What to wait for above instead of sleep?
             if (select_position(driver, position)):
                 time.sleep(1) # TODO: What to wait for instead?
                 click_add_player_button(driver)
@@ -70,42 +63,44 @@ def daily_simple_upgrade(driver, challenge_name, sort_type, quality, position="G
                 claim_rewards(driver)
             i += 1
 
+# TODO: Move this to utilities after resolving TODOs.
+def squad_builder_upgrade(driver, sort_type, quality):
+    use_squad_builder(driver)
+    # TODO: Don't sleep, wait for the necessary dropdown options 
+    time.sleep(1)  # Allow dropdown options to become visible
+    toggle_ignore_position(driver)
+
+    # TODO: Wait for the animation to complete instead of sleeping
+    time.sleep(.5) # Let the toggle complete the animation
+    set_sorting_and_quality(driver, sort_type, quality)
+
+    time.sleep(.5) # TODO: What are we sleeping for?
+
+    build_squad(driver)
+    time.sleep(2) # Allow requirements to update
+    # TODO: This sleep duration is excessive. Is it even necessary?
+
+    check_sbc_requirements(driver)
+    submit_squad(driver)
+    claim_rewards(driver)
+
 def daily_gold_upgrade(driver, sort_type):
     navigate_to_sbc(driver)
     select_upgrades_menu(driver)
     sbc_completable = open_daily_upgrade(driver, "Daily Gold Upgrade")
     if sbc_completable > 0:
         for i in range(sbc_completable):
+            # TODO: Wait for something instead of sleeping for 1 second 
             time.sleep(1) # Allow the SBC an opportunity to load
             if select_challenge(driver, "Bronze Challenge"):
                 start_challenge(driver)
-                use_squad_builder(driver)
-                time.sleep(1)  # Allow dropdown options to become visible
-                toggle_ignore_position(driver)
-                time.sleep(.5) # Let the toggle complete the animation
-                set_sorting_and_quality(driver, sort_type, "Bronze")
-                time.sleep(.5)
-                build_squad(driver)
-                time.sleep(2) # Allow requirements to update
-                check_sbc_requirements(driver)
-                submit_squad(driver)
-                claim_rewards(driver)
+                squad_builder_upgrade(driver, sort_type, "Bronze")
 
             if select_challenge(driver, "Silver Challenge"):
                 start_challenge(driver)
-                use_squad_builder(driver)
-                time.sleep(1)  # Allow dropdown options to become visible
-                toggle_ignore_position(driver)
-                time.sleep(.5) # Let the toggle complete the animation
-                set_sorting_and_quality(driver, sort_type, "Silver")
-                time.sleep(.5)
-                build_squad(driver)
-                time.sleep(2) # Allow requirements to update
-                check_sbc_requirements(driver)
-                submit_squad(driver)
-                claim_rewards(driver)
+                squad_builder_upgrade(driver, sort_type, "Silver")
 
-            claim_rewards(driver) # The 3rd claim rewards button is for the Gold upgrade
+            claim_rewards(driver) # The extra claim rewards button is for the completed Gold Upgrade SBC
             i += 1
 
 def daily_challenges(driver: webdriver):
@@ -137,6 +132,8 @@ def daily_challenges(driver: webdriver):
     
     if retry_attempts == max_retry_attempts:
         logging.error("Maximum retry attempts reached. Terminating daily challenges.")
+
+# TODO: IMPORTANT. The functions below need to be refactored to use existing helpers, or define new helpers.
 
 def toty_crafting_upgrade(driver, use_sbc_storage = False):
     #TODO: There is some duplicate code here. Consider refactoring into a common wrapper.
