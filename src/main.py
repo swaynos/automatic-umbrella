@@ -66,14 +66,12 @@ def main():
             daily_challenges(driver)
 
         # Special SBC's
-        if config.GRASSROOT_GRIND:
-            grassroot_grind(driver)
         if config.GOLD_UPGRADE:
             gold_upgrade(driver)
+        if config.EIGHTYTWO_PLUS_COMBO_UPGRADE:
+            eightytwo_plus_combo_upgrade(driver, use_sbc_storage = True)
         if config.TOTY_CRAFTING_UPGRADE:
             toty_crafting_upgrade(driver, use_sbc_storage = True)
-        if config.EIGHTYONE_PLUS_PLAYER_PICK:
-            eightyone_plus_player_pick(driver, use_sbc_storage = True)
         
     finally:
         # Close the browser when done

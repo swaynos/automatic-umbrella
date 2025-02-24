@@ -351,6 +351,37 @@ def is_slot_filled(driver, index):
         logging.error(f"Error checking if slot {index} is filled: {str(e)}")
         return False
 
+def is_slot_locked(driver, index):
+    """
+    Checks if the squad slot at the given index is locked by checking its class attribute.
+    
+    Args:
+        driver: The Selenium WebDriver instance.
+        index (int): The index of the slot to check.
+        
+    Returns:
+        bool: True if the slot is locked, False otherwise.
+    """
+    try:
+        # Locate the slot by its index attribute.
+        slot_selector = f"div.ut-squad-slot-view[index='{index}']"
+        slot = driver.find_element(By.CSS_SELECTOR, slot_selector)
+        
+        # Get the class attribute of the slot
+        classes = slot.get_attribute("class").split()
+        
+        # Check if 'locked' is in the list of classes
+        if "locked" in classes:
+            logging.info(f"Slot {index} is locked.")
+            return True
+        else:
+            logging.info(f"Slot {index} is not locked.")
+            return False
+
+    except Exception as e:
+        logging.error(f"Error checking if slot {index} is locked: {str(e)}")
+        return False
+
 def click_add_player_button(driver):
     """
     Clicks the 'Add Player' button if it is visible and enabled.
