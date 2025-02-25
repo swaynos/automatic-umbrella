@@ -67,9 +67,9 @@ def main():
 
         # Special SBC's
         if config.GOLD_UPGRADE:
-            gold_upgrade(driver)
+            gold_upgrade(driver, repeats = 1, use_sbc_storage = True)
         if config.EIGHTYTWO_PLUS_COMBO_UPGRADE:
-            eightytwo_plus_combo_upgrade(driver, repeats = 3, use_sbc_storage = True)
+            eightytwo_plus_combo_upgrade(driver, repeats = 1, use_sbc_storage = True)
         if config.TOTY_CRAFTING_UPGRADE:
             toty_crafting_upgrade(driver, use_sbc_storage = True)
         
