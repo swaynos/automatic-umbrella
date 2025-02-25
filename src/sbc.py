@@ -9,6 +9,7 @@ import selenium.common.exceptions as selenium_exceptions
 import config
 import time
 
+from sbc_helpers import build_squad as helpers_build_squad
 from sbc_helpers import *
 from utilities import *
 
@@ -76,7 +77,7 @@ def squad_builder_upgrade(driver, sort_type, quality):
 
     time.sleep(.5) # TODO: What are we sleeping for?
 
-    build_squad(driver)
+    helpers_build_squad(driver)
     time.sleep(2) # Allow requirements to update
     # TODO: This sleep duration is excessive. Is it even necessary?
 
@@ -299,18 +300,19 @@ def gold_upgrade(driver, repeats = 1, use_sbc_storage = True):
         logging.error(f"An error occurred: {str(e)}")
 
 def eightytwo_plus_combo_upgrade(driver, repeats = 1, use_sbc_storage = True):
-    challenge_name = "82+ Combo Upgrade"
+    challenge_name = "80+ 1 of 3 Player Pick"
     logging.info(f"Starting {challenge_name} challenge.")
 
     try:
         quality = "Gold"
         sort_type = "Lowest Quick Sell"
+        rarity = "Rare"
         navigate_to_sbc(driver)
         select_upgrades_menu(driver)
         for i in range(repeats):
             open_daily_upgrade(driver, challenge_name)
             time.sleep(1)
-            if build_squad(driver, quality, None, sort_type, use_sbc_storage):
+            if build_squad(driver, quality, rarity, sort_type, use_sbc_storage):
                 check_sbc_requirements(driver)
 
                 # TODO: This can be high risk, check the ratings of the cards added before clicking submit
