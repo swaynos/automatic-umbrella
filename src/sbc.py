@@ -274,6 +274,47 @@ def build_squad(driver, quality, rarity, sort_type, use_sbc_storage = True):
     
     return True
 
+# Effectively the same as build_squad, but with the ability to specify how many rare players to add
+# TODO: This could/should be the same method as above if I'm okay with sending a rare_count instead of specifying a rarity...
+def build_squad_variable_rarity(driver, quality, sort_type, use_sbc_storage = True, rare_count = 0):
+    current_rare_count = 0
+    for index in range(0, 11):
+        # Hide the popover if it's visible
+        if sbc_requirements_popover_visible(driver):
+            click_when_clickable(driver, By.CSS_SELECTOR, "div.ut-squad-summary-info")
+
+         # If the slot is occupied, skip this interation and move onto the next index
+        if is_slot_filled(driver, index) or is_slot_locked(driver, index):
+            continue
+
+        selected_position = select_position(driver, index=index)
+
+        if selected_position:
+            logging.info(f"Player selected at position: {selected_position}")
+            time.sleep(1) # TODO: What to wait for instead?
+            click_add_player_button(driver)
+            time.sleep(.5)  # Allow dropdown options to become visible
+            if use_sbc_storage:
+                set_sbc_storage(driver)
+            set_sorting_and_quality(driver, sort_type, quality)
+            if (current_rare_count < rare_count):
+                rarity = "Rare"
+                current_rare_count += 1
+            else:
+                rarity = "Common"
+            set_rarity(driver, rarity)
+            close_active_filter_by_position(driver, selected_position)
+            click_search_button(driver)
+            time.sleep(1)
+            click_first_add_player(driver)
+            time.sleep(.5)
+        else:
+            logging.error("Failed to add player.")
+            return False
+    
+    return True
+
+
 def gold_upgrade(driver, repeats = 1, use_sbc_storage = True):
     challenge_name = "Gold Upgrade"
     logging.info(f"Starting {challenge_name} challenge.")
@@ -306,13 +347,12 @@ def eightytwo_plus_combo_upgrade(driver, repeats = 1, use_sbc_storage = True):
     try:
         quality = "Gold"
         sort_type = "Lowest Quick Sell"
-        rarity = "Rare"
         navigate_to_sbc(driver)
         select_upgrades_menu(driver)
         for i in range(repeats):
             open_daily_upgrade(driver, challenge_name)
             time.sleep(1)
-            if build_squad(driver, quality, rarity, sort_type, use_sbc_storage):
+            if build_squad_variable_rarity(driver, quality, sort_type, use_sbc_storage, rare_count = 3):
                 check_sbc_requirements(driver)
 
                 # TODO: This can be high risk, check the ratings of the cards added before clicking submit
