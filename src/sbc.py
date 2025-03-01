@@ -340,8 +340,7 @@ def gold_upgrade(driver, repeats = 1, use_sbc_storage = True):
         take_screenshot(driver)
         logging.error(f"An error occurred: {str(e)}")
 
-def eightytwo_plus_combo_upgrade(driver, repeats = 1, use_sbc_storage = True):
-    challenge_name = "80+ 1 of 3 Player Pick"
+def special_upgrade(driver, challenge_name, repeats = 1, use_sbc_storage = True, rare_count = 3):
     logging.info(f"Starting {challenge_name} challenge.")
 
     try:
@@ -352,7 +351,7 @@ def eightytwo_plus_combo_upgrade(driver, repeats = 1, use_sbc_storage = True):
         for i in range(repeats):
             open_daily_upgrade(driver, challenge_name)
             time.sleep(1)
-            if build_squad_variable_rarity(driver, quality, sort_type, use_sbc_storage, rare_count = 3):
+            if build_squad_variable_rarity(driver, quality, sort_type, use_sbc_storage, rare_count):
                 check_sbc_requirements(driver)
 
                 # TODO: This can be high risk, check the ratings of the cards added before clicking submit
