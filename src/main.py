@@ -50,37 +50,42 @@ def main():
         # Call the login function
         login(driver)
 
-        # TODO: How to wait for loading to be done?
-
         # Check for the presence of the live message and click the continue button if it exists
         check_and_click_continue(driver)
 
-        # Open packs
-        if config.OPEN_GOLD_PACKS:
-            open_gold_packs(driver)
-        if config.OPEN_CHEAP_PACKS:
-            open_cheap_packs(driver)
+        # Flow Control - Step 1. SBC
+        sbcs(driver)
 
-        # Solve daily challenges
-        if config.SOLVE_DAILY_CHALLENGES:
-            daily_challenges(driver)
-
-        # Special SBC's
-        if config.GOLD_UPGRADE:
-            gold_upgrade(driver, 
-                         repeats = config.GOLD_UPGRADE_COUNT, 
-                         use_sbc_storage = config.GOLD_UPGRADE_USE_SBC_STORAGE)
-        if config.SPECIAL_UPGRADE:
-            special_upgrade(driver, config.SPECIAL_UPGRADE_NAME,
-                                         repeats = config.SPECIAL_UPGRADE_COUNT, 
-                                         use_sbc_storage = config.SPECIAL_UPGRADE_USE_SBC_STORAGE,
-                                         rare_count = config.SPECIAL_UPGRADE_RARE_COUNT)
-        if config.TOTY_CRAFTING_UPGRADE:
-            toty_crafting_upgrade(driver, use_sbc_storage = True)
-        
+        # Flow Control - Step 2. Open Packs
+        open_packs(driver) 
     finally:
         # Close the browser when done
         driver.quit()
+
+def sbcs(driver):
+    # Solve daily challenges
+    if config.SOLVE_DAILY_CHALLENGES:
+        daily_challenges(driver)
+
+    # Special SBC's
+    if config.GOLD_UPGRADE:
+        gold_upgrade(driver, 
+                        repeats = config.GOLD_UPGRADE_COUNT, 
+                        use_sbc_storage = config.GOLD_UPGRADE_USE_SBC_STORAGE)
+    if config.SPECIAL_UPGRADE:
+        special_upgrade(driver, config.SPECIAL_UPGRADE_NAME,
+                                        repeats = config.SPECIAL_UPGRADE_COUNT, 
+                                        use_sbc_storage = config.SPECIAL_UPGRADE_USE_SBC_STORAGE,
+                                        rare_count = config.SPECIAL_UPGRADE_RARE_COUNT)
+    if config.TOTY_CRAFTING_UPGRADE:
+        toty_crafting_upgrade(driver, use_sbc_storage = True)
+
+def open_packs(driver):
+    # Open packs
+    if config.OPEN_GOLD_PACKS:
+        open_gold_packs(driver)
+    if config.OPEN_CHEAP_PACKS:
+        open_cheap_packs(driver)
 
 if __name__ == "__main__":
     main()
