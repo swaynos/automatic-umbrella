@@ -340,7 +340,7 @@ def gold_upgrade(driver, repeats = 1, use_sbc_storage = True):
         take_screenshot(driver)
         logging.error(f"An error occurred: {str(e)}")
 
-def special_upgrade(driver, challenge_name, repeats = 1, use_sbc_storage = True, rare_count = 3):
+def special_upgrade(driver, challenge_name, repeats = 1, use_sbc_storage = True, rare_count = 1):
     logging.info(f"Starting {challenge_name} challenge.")
 
     try:
