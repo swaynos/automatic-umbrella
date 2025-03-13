@@ -91,17 +91,18 @@ def daily_gold_upgrade(driver, sort_type):
     sbc_completable = open_daily_upgrade(driver, "Daily Gold Upgrade")
     if sbc_completable > 0:
         for i in range(sbc_completable):
-            # TODO: Wait for something instead of sleeping for 1 second 
             time.sleep(1) # Allow the SBC an opportunity to load
-            if select_challenge(driver, "Bronze Challenge"):
-                start_challenge(driver)
-                squad_builder_upgrade(driver, sort_type, "Bronze")
+            # Index 0 is locked out, so we let the first iteration be 5+1
+            squad_success = build_squad_variable_rarity(driver, "Bronze", sort_type, False, 0, 6)
+            if squad_success:
+                # Index 1 through 5 are filled with bronze so set the limit to 6+5
+                squad_success = build_squad_variable_rarity(driver, "Silver", sort_type, False, 0, 11)
 
-            if select_challenge(driver, "Silver Challenge"):
-                start_challenge(driver)
-                squad_builder_upgrade(driver, sort_type, "Silver")
+            if squad_success:
+                check_sbc_requirements(driver)
+                submit_squad(driver)
+                claim_rewards(driver)
 
-            claim_rewards(driver) # The extra claim rewards button is for the completed Gold Upgrade SBC
             i += 1
 
 def daily_challenges(driver: webdriver):
@@ -276,9 +277,10 @@ def build_squad(driver, quality, rarity, sort_type, use_sbc_storage = True):
 
 # Effectively the same as build_squad, but with the ability to specify how many rare players to add
 # TODO: This could/should be the same method as above if I'm okay with sending a rare_count instead of specifying a rarity...
-def build_squad_variable_rarity(driver, quality, sort_type, use_sbc_storage = True, rare_count = 0):
+def build_squad_variable_rarity(driver, quality, sort_type, use_sbc_storage = True, rare_count = 0, limit = 0):
     current_rare_count = 0
-    for index in range(0, 11):
+    upper_range = 11 if limit == 0 else limit
+    for index in range(0, upper_range):
         # Hide the popover if it's visible
         if sbc_requirements_popover_visible(driver):
             click_when_clickable(driver, By.CSS_SELECTOR, "div.ut-squad-summary-info")
