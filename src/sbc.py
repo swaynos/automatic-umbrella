@@ -136,98 +136,28 @@ def daily_challenges(driver: webdriver):
         logging.error("Maximum retry attempts reached. Terminating daily challenges.")
 
 # TODO: IMPORTANT. The functions below need to be refactored to use existing helpers, or define new helpers.
-
-def toty_crafting_upgrade(driver, use_sbc_storage = False):
+def special_crafting_upgrade(driver, use_sbc_storage = False):
     #TODO: There is some duplicate code here. Consider refactoring into a common wrapper.
     retry_attempts = 0
     max_retry_attempts = 3
-
+    SBC_NAME = "FUT Birthday Crafting Upgrade"
     while retry_attempts < max_retry_attempts:
         try:
             quality = "Gold"
             sort_type = "Lowest Quick Sell"
             navigate_to_sbc(driver)
             select_upgrades_menu(driver)
-            sbc_completable = open_daily_upgrade(driver, "TOTY Crafting Upgrade")
-            if sbc_completable > 0 and not use_sbc_storage:
+            sbc_completable = open_daily_upgrade(driver, SBC_NAME)
+            if sbc_completable > 0:
                 for i in range(sbc_completable):
-                    sbc_completable = open_daily_upgrade(driver, "TOTY Crafting Upgrade")
+                    sbc_completable = open_daily_upgrade(driver, SBC_NAME)
                     time.sleep(1)
-                    # Find the first open slot
-                    for index in range(0, 11):
-                        # Hide the popover if it's visible
-                        if sbc_requirements_popover_visible(driver):
-                            click_when_clickable(driver, By.CSS_SELECTOR, "div.ut-squad-summary-info")
+                    if build_squad(driver, quality, rarity = None, sort_type = sort_type, use_sbc_storage = use_sbc_storage):
+                        check_sbc_requirements(driver)
 
-                        if is_slot_filled(driver, index):
-                            continue
-                        else:
-                            # Set the first open slot to a Rare player
-                            selected_position = select_position(driver, index=index)
-                            if selected_position:
-                                logging.info(f"Player selected at position: {selected_position}")
-                                time.sleep(1) # TODO: What to wait for instead?
-                                click_add_player_button(driver)
-                                time.sleep(.5)  # Allow dropdown options to become visible
-                                set_sorting_and_quality(driver, sort_type, quality)
-                                set_rarity(driver, "Rare")
-                                close_active_filter_by_position(driver, selected_position)
-                                click_search_button(driver)
-                                time.sleep(1)
-                                click_first_add_player(driver)
-                                time.sleep(.5)
-                            # Click on the canvas to clear any dialogs
-                            canvas = driver.find_element(By.CSS_SELECTOR, "canvas.ut-squad-pitch-view--canvas")
-                            canvas.click()
-                            break
-                    # Fill the rest using squad builder
-                    use_squad_builder(driver)
-                    time.sleep(1)  # Allow dropdown options to become visible
-                    toggle_ignore_position(driver)
-                    set_sorting_and_quality(driver, sort_type, "Gold")
-                    time.sleep(.5)
-                    build_squad(driver)
-                    time.sleep(2) # Allow requirements to update
-
-                    check_sbc_requirements(driver)
-                    # TODO: This could be high risk, check the ratings of the cards added before clicking submit
-                    submit_squad(driver)
-                    claim_rewards(driver)
-            elif sbc_completable > 0 and use_sbc_storage:
-                for i in range(sbc_completable):
-                    time.sleep(1)
-                    for index in range(0, 11):
-                        # Hide the popover if it's visible
-                        if sbc_requirements_popover_visible(driver):
-                            click_when_clickable(driver, By.CSS_SELECTOR, "div.ut-squad-summary-info")
-
-                        # If the slot is occupied, skip this interation and move onto the next index
-                        if is_slot_filled(driver, index):
-                            continue
-
-                        selected_position = select_position(driver, index=index)
-                        if selected_position:
-                            logging.info(f"Player selected at position: {selected_position}")
-                            time.sleep(1) # TODO: What to wait for instead?
-                            click_add_player_button(driver)
-                            time.sleep(.5)  # Allow dropdown options to become visible
-                            set_sbc_storage(driver)
-                            set_sorting_and_quality(driver, sort_type, quality)
-                            close_active_filter_by_position(driver, selected_position)
-                            click_search_button(driver)
-                            time.sleep(1)
-                            click_first_add_player(driver)
-                            time.sleep(.5)
-
-                        # TODO: Check the rarity of the players added. If a rare card was not added from SBC storage, attempt to add one from the player pool at index 11.
-                        
-                        else:
-                            logging.error("Failed to add player.")
-                    check_sbc_requirements(driver)
-
-                    # TODO: This can be high risk, check the ratings of the cards added before clicking submit
-                    submit_squad(driver)
-                    claim_rewards(driver)
+                        # TODO: This can be high risk, check the ratings of the cards added before clicking submit
+                        submit_squad(driver)
+                        claim_rewards(driver)
         except selenium_exceptions.TimeoutException as e:
             take_screenshot(driver)
             logging.error(f"Timeout Exception occurred: {str(e)}")
@@ -239,8 +169,9 @@ def toty_crafting_upgrade(driver, use_sbc_storage = False):
         retry_attempts += 1
         logging.info(f"Retrying... Attempt {retry_attempts}/{max_retry_attempts}")
     
+    # It actually already terminated the loop, but we should log the error
     if retry_attempts == max_retry_attempts:
-        logging.error("Maximum retry attempts reached. Terminating toty crafting upgrade.")
+        logging.error("Maximum retry attempts reached. Terminating special crafting upgrade.")
 
 def build_squad(driver, quality, rarity, sort_type, use_sbc_storage = True):
     for index in range(0, 11):

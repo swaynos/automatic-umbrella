@@ -77,8 +77,8 @@ def sbcs(driver):
                                         repeats = config.SPECIAL_UPGRADE_COUNT, 
                                         use_sbc_storage = config.SPECIAL_UPGRADE_USE_SBC_STORAGE,
                                         rare_count = config.SPECIAL_UPGRADE_RARE_COUNT)
-    if config.TOTY_CRAFTING_UPGRADE:
-        toty_crafting_upgrade(driver, use_sbc_storage = True)
+    if config.SPECIAL_CRAFTING_UPGRADE:
+        special_crafting_upgrade(driver, use_sbc_storage = config.SPECIAL_CRAFTING_UPGRADE_USE_SBC_STORAGE)
 
 def open_packs(driver):
     # Open packs
