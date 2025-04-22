@@ -136,11 +136,10 @@ def daily_challenges(driver: webdriver):
         logging.error("Maximum retry attempts reached. Terminating daily challenges.")
 
 # TODO: IMPORTANT. The functions below need to be refactored to use existing helpers, or define new helpers.
-def special_crafting_upgrade(driver, use_sbc_storage = False):
+def special_crafting_upgrade(driver, SBC_NAME, use_sbc_storage = False):
     #TODO: There is some duplicate code here. Consider refactoring into a common wrapper.
     retry_attempts = 0
     max_retry_attempts = 3
-    SBC_NAME = "FUT Birthday Crafting Upgrade"
     while retry_attempts < max_retry_attempts:
         try:
             quality = "Gold"
